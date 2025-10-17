@@ -1,0 +1,3 @@
+[submodule "tests/speech-resynthesis"]
+	path = tests/speech-resynthesis
+	url = https://github.com/facebookresearch/speech-resynthesis

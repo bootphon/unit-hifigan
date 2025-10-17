@@ -1,0 +1,45 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    name: Build wheel and create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Linter
+        uses: astral-sh/ruff-action@v3
+
+      - name: Get tag name
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Build wheel
+        run: uv build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: ./dist/*
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.get_tag.outputs.TAG_NAME }}
+        run: gh release create "$TAG" ./dist/*
+
+      - name: Upload to PyPI
+        run: uv publish -t ${{ secrets.PYPI_TOKEN }}
+
