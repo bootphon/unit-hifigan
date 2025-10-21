@@ -34,8 +34,8 @@ class TrainConfig:
     train_manifest: str
     val_manifest: str
     n_units: int
-    max_steps: int = 100_000
-    max_epochs: int = 1_000
+    max_steps: int = 500_000
+    max_epochs: int = 2_000
     seed: int = 1234
     lr: float = 2e-4
     betas: tuple[float, float] = (0.8, 0.99)
