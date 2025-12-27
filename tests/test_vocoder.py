@@ -20,7 +20,7 @@ def vocoders(config: dict, device: torch.device) -> Vocoders:
         ref = MultiSpkrMultiStyleCodeGenerator(AttrDict(config))
     speakers = [f"speaker-{k}" for k in range(ref.spkr.weight.size(0))] if ref.spkr is not None else None
     styles = [f"style-{k}" for k in range(ref.style.weight.size(0))] if ref.style is not None else None
-    f0_bins = [k for k in range(ref.f0.weight.size(0))] if ref.f0 is not None else None
+    f0_bins = list(range(ref.f0.weight.size(0))) if ref.f0 is not None else None
     ours = UnitVocoder(n_units=config["num_embeddings"], speakers=speakers, styles=styles, f0_bins=f0_bins)
     ours.load_state_dict(convert_vocoder_state_dict(ref.state_dict()))
     return ours.to(device), ref.to(device)

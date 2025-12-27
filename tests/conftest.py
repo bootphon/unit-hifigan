@@ -7,7 +7,7 @@ import torch
 
 
 @pytest.fixture(scope="session")
-def config(reference_path: Path) -> dict:
+def config() -> dict:
     with (Path(__file__).parent / "speech-resynthesis/examples/expresso/config/expresso_config.json").open() as f:
         return json.load(f)
 
