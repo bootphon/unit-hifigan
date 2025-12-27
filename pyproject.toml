@@ -1,6 +1,6 @@
 [project]
 name = "unit-hifigan"
-version = "0.1.1"
+version = "0.1.2"
 description = "Unit HiFi-GAN"
 license = "MIT"
 readme = "README.md"
@@ -52,3 +52,7 @@ ignore-names = ["_foreach_add", "_foreach_pow", "_foreach_abs"]
 
 [tool.pytest.ini_options]
 addopts = "-v --ignore=tests/textlesslib --ignore=tests/speech-resynthesis"
+
+[tool.typos.default.extend-words]
+expresso = "expresso"
+EXPRESSO = "EXPRESSO"
