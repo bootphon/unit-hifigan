@@ -23,10 +23,10 @@ class ASRDataset(Dataset):
     def __len__(self) -> int:
         return len(self.manifest)
 
-    def __getitem__(self, item: int) -> tuple[torch.Tensor, str, str]:
-        if item < 0 or item >= len(self.manifest):
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, str, str]:
+        if index < 0 or index >= len(self.manifest):
             raise IndexError("Index out of range")
-        entry = self.manifest[item]
+        entry = self.manifest[index]
         samples = AudioDecoder(self.root / entry["audio"][0]).get_all_samples()
         assert samples.sample_rate == SAMPLE_RATE
         audio = whisper.pad_or_trim(samples.data.flatten())
@@ -49,7 +49,7 @@ def whisper_word_error_rate(
 
     audios, hypotheses, references = [], [], []
     for mels, texts, paths in tqdm(loader):
-        hypotheses += [result.text for result in model.decode(mels.to(device), options)]
+        hypotheses += [result.text for result in model.decode(mels.to(device), options)]  # ty:ignore[not-iterable]
         references += texts
         audios += paths
     normalizer = EnglishTextNormalizer()

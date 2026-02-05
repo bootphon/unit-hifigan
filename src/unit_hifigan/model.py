@@ -40,15 +40,11 @@ class PeriodDiscriminator(nn.Module):
         )
         self.conv_post = weight_norm(nn.Conv2d(1_024, 1, (3, 1), 1, (1, 0)))
 
-    @torch.compiler.disable  # To remove when https://github.com/pytorch/pytorch/issues/165749 is fixed
-    def forward_conv(self, conv: nn.Conv2d, x: Tensor) -> Tensor:
-        return conv(x)
-
     def forward(self, x: Tensor) -> tuple[Tensor, list[Tensor]]:
         feature_maps = []
         x = one_dim_to_two_dim(x, self.period)
         for conv in self.convs:
-            x = F.leaky_relu(self.forward_conv(conv, x), LRELU_SLOPE)
+            x = F.leaky_relu(conv(x), LRELU_SLOPE)
             feature_maps.append(x)
         x = self.conv_post(x)
         feature_maps.append(x)
@@ -240,7 +236,7 @@ class Generator(nn.Module):
         self.conv_pre = weight_norm(nn.Conv1d(input_dim, upsample_input_channels, 7, padding=3))
         self.upsamplers = upsamplers(upsample_input_channels, upsample_kernel_sizes, upsample_strides)
         self.mrfs = mrfs(upsample_input_channels, self.n_upsamples, mrf_kernel_sizes, mrf_dilations)
-        self.conv_post = weight_norm(nn.Conv1d(self.mrfs[-1].channels, 1, 7, padding=3))
+        self.conv_post = weight_norm(nn.Conv1d(self.mrfs[-1].channels, 1, 7, padding=3))  # ty: ignore[invalid-argument-type]
         self.apply(lambda m: normal_(m.weight, 0.0, 0.01) if isinstance(m, (nn.Conv1d, nn.ConvTranspose1d)) else None)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -344,7 +340,7 @@ class UnitVocoder(nn.Module, PyTorchModelHubMixin):
             raise ValueError("Cannot change the number of speakers")
         self._speakers = value
         self._speaker_to_index = {s: i for i, s in enumerate(self._speakers)}
-        self._hub_mixin_config["speakers"] = self._speakers
+        self._hub_mixin_config["speakers"] = self._speakers  # ty: ignore[invalid-assignment]
 
     @property
     def styles(self) -> list[str]:
@@ -356,7 +352,7 @@ class UnitVocoder(nn.Module, PyTorchModelHubMixin):
             raise ValueError("Cannot change the number of styles")
         self._styles = value
         self._style_to_index = {s: i for i, s in enumerate(self._styles)}
-        self._hub_mixin_config["styles"] = self._styles
+        self._hub_mixin_config["styles"] = self._styles  # ty: ignore[invalid-assignment]
 
     @property
     def f0_bins(self) -> list[int]:
@@ -368,7 +364,7 @@ class UnitVocoder(nn.Module, PyTorchModelHubMixin):
             raise ValueError("Cannot change the number of f0 bins")
         self._f0_bins = value
         self._f0_bins_to_index = {b: i for i, b in enumerate(self._f0_bins)}
-        self._hub_mixin_config["f0_bins"] = self._f0_bins
+        self._hub_mixin_config["f0_bins"] = self._f0_bins  # ty: ignore[invalid-assignment]
 
     @classmethod
     def from_legacy_pretrained(cls, path: str | Path) -> "UnitVocoder":

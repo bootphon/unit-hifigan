@@ -1,25 +1,25 @@
 [project]
 name = "unit-hifigan"
-version = "0.1.2"
+version = "0.1.3"
 description = "Unit HiFi-GAN"
-license = "MIT"
 readme = "README.md"
-authors = [
-    { name = "Maxime Poli" },
-    { name = "CoML", email = "dev@cognitive-ml.fr" },
-]
 requires-python = ">=3.13"
+license = "MIT"
+authors = [
+  { name = "Maxime Poli" },
+  { name = "CoML", email = "dev@cognitive-ml.fr" },
+]
 dependencies = [
-    "huggingface-hub>=0.35.3",
-    "numpy>=2.3.3",
-    "polars>=1.33.1",
-    "safetensors>=0.6.2",
-    "torch>=2.8.0",
-    "torchaudio>=2.8.0",
-    "torchcodec>=0.7.0",
-    "torchdata>=0.11.0",
-    "tqdm>=4.67.1",
-    "viztracer>=1.0.4",
+  "huggingface-hub>=0.35.3",
+  "numpy>=2.3.5",
+  "polars>=1.33.1",
+  "safetensors>=0.6.2",
+  "torch>=2.10.0",
+  "torchaudio>=2.10.0",
+  "torchcodec>=0.10.0",
+  "torchdata>=0.11.0",
+  "tqdm>=4.67.1",
+  "viztracer>=1.0.4",
 ]
 
 [project.optional-dependencies]
@@ -30,8 +30,15 @@ requires = ["flit_core>=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [dependency-groups]
-dev = ["ipykernel>=6.30.1", "ruff>=0.13.2"]
-test = ["hypothesis>=6.141.0", "matplotlib>=3.10.7", "pytest>=8.4.2"]
+dev = [
+  "ipykernel>=6.30.1",
+  "ruff>=0.13.2",
+]
+test = [
+  "hypothesis>=6.141.0",
+  "matplotlib>=3.10.7",
+  "pytest>=8.4.2",
+]
 
 [tool.ruff]
 line-length = 119
@@ -50,9 +57,12 @@ ignore-names = ["F"]
 [tool.ruff.lint.flake8-self]
 ignore-names = ["_foreach_add", "_foreach_pow", "_foreach_abs"]
 
-[tool.pytest.ini_options]
-addopts = "-v --ignore=tests/textlesslib --ignore=tests/speech-resynthesis"
+[tool.pytest]
+addopts = ["-v", "--ignore=tests/speech-resynthesis"]
 
 [tool.typos.default.extend-words]
 expresso = "expresso"
 EXPRESSO = "EXPRESSO"
+
+[tool.ty.rules]
+possibly-missing-attribute = "ignore"

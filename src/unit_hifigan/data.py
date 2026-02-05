@@ -114,6 +114,8 @@ class AudioDataset(Dataset[AudioItem]):
 
 
 class AudioDataLoader(StatefulDataLoader[AudioItem]):
+    dataset: AudioDataset
+
     def set_metadata(self, *, speakers: list[str] | None, styles: list[str] | None, f0_bins: list[int] | None) -> None:
         self.dataset.speakers = speakers
         self.dataset.styles = styles

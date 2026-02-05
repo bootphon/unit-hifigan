@@ -164,7 +164,7 @@ def train(cfg: TrainConfig) -> None:  # noqa: PLR0915
 
         # Training loop
         while step < cfg.max_steps and epoch < cfg.max_epochs:
-            loader.sampler.set_epoch(epoch)
+            loader.sampler.set_epoch(epoch)  # ty: ignore[unresolved-attribute]
             for batch in loader:
                 if step >= cfg.max_steps:
                     break

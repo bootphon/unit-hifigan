@@ -10,17 +10,19 @@ LAMBDA_FEATURE_MATCHING = 2.0
 
 
 def feature_matching_loss(fm_real: tuple[Tensor, ...], fm_gen: tuple[Tensor, ...]) -> Tensor:
-    return sum([loss.mean() for loss in torch._foreach_abs(torch._foreach_add(fm_gen, fm_real, alpha=-1.0))])
+    return torch.stack(
+        [loss.mean() for loss in torch._foreach_abs(torch._foreach_add(fm_gen, fm_real, alpha=-1.0))]
+    ).sum()
 
 
 def gan_generator_loss(y_gen: tuple[Tensor, ...]) -> Tensor:
-    return sum([loss.mean() for loss in torch._foreach_pow(torch._foreach_add(y_gen, -1), 2)])
+    return torch.stack([loss.mean() for loss in torch._foreach_pow(torch._foreach_add(y_gen, -1), 2)]).sum()
 
 
 def gan_discriminator_loss(y_real: tuple[Tensor, ...], y_gen: tuple[Tensor, ...]) -> Tensor:
     losses_real = torch._foreach_pow(torch._foreach_add(y_real, -1), 2)
     loss_gen = torch._foreach_pow(y_gen, 2)
-    return sum([loss.mean() for loss in losses_real + loss_gen])
+    return torch.stack([loss.mean() for loss in losses_real + loss_gen]).sum()
 
 
 @torch.compile(fullgraph=True, dynamic=False)

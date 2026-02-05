@@ -24,7 +24,7 @@ def inference(root: str | Path, path_model: str | Path, path_manifest: str | Pat
             units = torch.tensor(entry["units"], dtype=torch.long, device=device).unsqueeze(0)
             speaker = [entry["speaker"]] if "speaker" in entry else None
             style = [entry["style"]] if "style" in entry else None
-            audio = model.generate(units, speaker=speaker, style=style).squeeze().cpu()
+            audio = model.generate(units, speaker=speaker, style=style).squeeze().cpu()  # ty: ignore[unresolved-attribute]
             AudioEncoder(audio, sample_rate=SAMPLE_RATE).to_file(dest)
 
 

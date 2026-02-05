@@ -2,10 +2,10 @@ import warnings
 
 import pytest
 import torch
-from examples.expresso.models import MultiSpkrMultiStyleCodeGenerator  # From speech-resynthesis
+from examples.expresso.models import MultiSpkrMultiStyleCodeGenerator  # ty: ignore[unresolved-import]
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from utils import AttrDict  # From speech-resynthesis
+from utils import AttrDict  # ty: ignore[unresolved-import]
 
 from unit_hifigan import UnitVocoder
 from unit_hifigan.compatibility import convert_vocoder_state_dict

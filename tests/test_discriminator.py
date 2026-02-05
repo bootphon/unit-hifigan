@@ -14,7 +14,7 @@ import pytest
 import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from models import MultiPeriodDiscriminator, MultiScaleDiscriminator  # From speech-resynthesis
+from models import MultiPeriodDiscriminator, MultiScaleDiscriminator  # ty: ignore[unresolved-import]
 
 from unit_hifigan.compatibility import convert_discriminators_state_dict
 from unit_hifigan.model import UnitDiscriminator
