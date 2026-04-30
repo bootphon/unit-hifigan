@@ -74,6 +74,6 @@ if __name__ == "__main__":
 
     output = torchaudio_word_error_rate(args.root, args.manifest, pipeline=getattr(pipelines, args.pipeline))
     output.write_ndjson(args.output)
-    wer = output["word_ed"].sum() / output["word_length"].sum()
-    cer = output["char_ed"].sum() / output["char_length"].sum()
+    wer = float(output["word_ed"].sum()) / float(output["word_length"].sum())
+    cer = float(output["char_ed"].sum()) / float(output["char_length"].sum())
     print(f"WER={wer:.2%}, CER={cer:.2%}")

@@ -108,8 +108,12 @@ class AudioDataset(Dataset[AudioItem]):
         entry = self.manifest[index].to_dicts()[0]
         units, audio = torch.tensor(entry["units"], dtype=torch.long), load_audio(entry["audio"])
         units, audio = crop_segment(units, audio, self.units_hop_size, self.segment_size)
-        speaker = torch.tensor([self.speaker_to_index[entry["speaker"]]], dtype=torch.long) if self.speakers else None
-        style = torch.tensor([self.style_to_index[entry["style"]]], dtype=torch.long) if self.styles else None
+        speaker = (
+            torch.tensor([self.speaker_to_index[entry["speaker"]]], dtype=torch.long)
+            if self.speaker_to_index
+            else None
+        )
+        style = torch.tensor([self.style_to_index[entry["style"]]], dtype=torch.long) if self.style_to_index else None
         return AudioItem(units, audio, speaker, style, f0=None)
 
 
@@ -152,7 +156,7 @@ def build_dataloader(
         if dist.is_initialized()
         else None,
         num_workers=os.process_cpu_count() or 0,
-        collate_fn=partial(collate, collate_fn_map=default_collate_fn_map | {NoneType: lambda *args, **kwargs: None}),  # noqa: ARG005
+        collate_fn=partial(collate, collate_fn_map=default_collate_fn_map | {NoneType: lambda *_, **__: None}),
         drop_last=is_train,
         generator=torch.Generator().manual_seed(seed + (dist.get_rank() if dist.is_initialized() else 0)),
         persistent_workers=is_train,

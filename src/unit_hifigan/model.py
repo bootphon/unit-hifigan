@@ -237,7 +237,7 @@ class Generator(nn.Module):
         self.upsamplers = upsamplers(upsample_input_channels, upsample_kernel_sizes, upsample_strides)
         self.mrfs = mrfs(upsample_input_channels, self.n_upsamples, mrf_kernel_sizes, mrf_dilations)
         self.conv_post = weight_norm(nn.Conv1d(self.mrfs[-1].channels, 1, 7, padding=3))  # ty: ignore[invalid-argument-type]
-        self.apply(lambda m: normal_(m.weight, 0.0, 0.01) if isinstance(m, (nn.Conv1d, nn.ConvTranspose1d)) else None)
+        self.apply(lambda m: normal_(m.weight, 0.0, 0.01) if isinstance(m, (nn.Conv1d, nn.ConvTranspose1d)) else None)  # ty: ignore[invalid-argument-type]
 
     def forward(self, x: Tensor) -> Tensor:
         x = self.conv_pre(x)

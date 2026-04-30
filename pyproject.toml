@@ -10,7 +10,7 @@ authors = [
   { name = "CoML", email = "dev@cognitive-ml.fr" },
 ]
 dependencies = [
-  "huggingface-hub>=0.35.3",
+  "huggingface-hub>=1.13.0",
   "numpy>=2.3.5",
   "polars>=1.33.1",
   "safetensors>=0.6.2",
@@ -25,20 +25,23 @@ dependencies = [
 [project.optional-dependencies]
 whisper = ["openai-whisper>=20250625"]
 
-[build-system]
-requires = ["flit_core>=3.2,<4"]
-build-backend = "flit_core.buildapi"
-
 [dependency-groups]
 dev = [
   "ipykernel>=6.30.1",
-  "ruff>=0.13.2",
+  "prek>=0.3.11",
 ]
 test = [
   "hypothesis>=6.141.0",
   "matplotlib>=3.10.7",
   "pytest>=8.4.2",
 ]
+
+[build-system]
+requires = ["flit_core>=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.pytest]
+addopts = ["--ignore=tests/speech-resynthesis", "-v"]
 
 [tool.ruff]
 line-length = 119
@@ -57,12 +60,9 @@ ignore-names = ["F"]
 [tool.ruff.lint.flake8-self]
 ignore-names = ["_foreach_add", "_foreach_pow", "_foreach_abs"]
 
-[tool.pytest]
-addopts = ["-v", "--ignore=tests/speech-resynthesis"]
+[tool.ty.rules]
+possibly-missing-attribute = "ignore"
 
 [tool.typos.default.extend-words]
 expresso = "expresso"
 EXPRESSO = "EXPRESSO"
-
-[tool.ty.rules]
-possibly-missing-attribute = "ignore"

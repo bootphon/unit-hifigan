@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
 import torch
@@ -12,6 +13,9 @@ from whisper.audio import SAMPLE_RATE
 from whisper.normalizers import EnglishTextNormalizer
 
 from unit_hifigan.data import read_manifest
+
+if TYPE_CHECKING:
+    from whisper.decoding import DecodingResult
 
 
 class ASRDataset(Dataset):
@@ -49,7 +53,8 @@ def whisper_word_error_rate(
 
     audios, hypotheses, references = [], [], []
     for mels, texts, paths in tqdm(loader):
-        hypotheses += [result.text for result in model.decode(mels.to(device), options)]  # ty:ignore[not-iterable]
+        decoding_result: list[DecodingResult] = model.decode(mels.to(device), options)  # ty: ignore[invalid-assignment]
+        hypotheses += [result.text for result in decoding_result]
         references += texts
         audios += paths
     normalizer = EnglishTextNormalizer()
@@ -92,6 +97,6 @@ if __name__ == "__main__":
 
     output = whisper_word_error_rate(args.root, args.manifest, model_name=args.model, batch_size=args.batch_size)
     output.write_ndjson(args.output)
-    wer = output["word_ed"].sum() / output["word_length"].sum()
-    cer = output["char_ed"].sum() / output["char_length"].sum()
+    wer = float(output["word_ed"].sum()) / float(output["word_length"].sum())
+    cer = float(output["char_ed"].sum()) / float(output["char_length"].sum())
     print(f"WER={wer:.2%}, CER={cer:.2%}")
