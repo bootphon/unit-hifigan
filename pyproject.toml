@@ -26,10 +26,7 @@ dependencies = [
 whisper = ["openai-whisper>=20250625"]
 
 [dependency-groups]
-dev = [
-  "ipykernel>=6.30.1",
-  "prek>=0.3.11",
-]
+dev = ["prek>=0.4.8"]
 test = [
   "hypothesis>=6.141.0",
   "matplotlib>=3.10.7",
@@ -42,7 +39,9 @@ build-backend = "flit_core.buildapi"
 
 [tool.pytest.ini_options]
 addopts = ["--ignore=tests/speech-resynthesis"]
-markers = ["slow: parity tests against the reference implementation (deselect with '-m \"not slow\"')"]
+markers = [
+  "slow: parity tests against the reference implementation (deselect with '-m \"not slow\"')"
+]
 
 [tool.ruff]
 line-length = 119
