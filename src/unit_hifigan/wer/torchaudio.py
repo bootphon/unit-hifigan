@@ -46,8 +46,8 @@ def torchaudio_word_error_rate(
             "audio": source,
             "transcript": transcript,
             "hypothesis": hypothesis,
-            "wer": word_ed / word_length,
-            "cer": char_ed / char_length,
+            "wer": word_ed / max(word_length, 1),
+            "cer": char_ed / max(char_length, 1),
             "word_ed": word_ed,
             "word_length": word_length,
             "char_ed": char_ed,
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    output = torchaudio_word_error_rate(args.root, args.manifest, pipeline=getattr(pipelines, args.pipeline))
+    output = torchaudio_word_error_rate(args.root, args.manifest, pipeline=getattr(pipelines, args.model))
     output.write_ndjson(args.output)
     wer = float(output["word_ed"].sum()) / float(output["word_length"].sum())
     cer = float(output["char_ed"].sum()) / float(output["char_length"].sum())

@@ -6,7 +6,6 @@ import torch
 from huggingface_hub import PyTorchModelHubMixin
 from torch import Tensor, nn
 from torch.nn import functional as F
-from torch.nn.init import normal_
 from torch.nn.utils.parametrizations import spectral_norm, weight_norm
 from torchaudio.transforms import MelSpectrogram
 
@@ -237,7 +236,6 @@ class Generator(nn.Module):
         self.upsamplers = upsamplers(upsample_input_channels, upsample_kernel_sizes, upsample_strides)
         self.mrfs = mrfs(upsample_input_channels, self.n_upsamples, mrf_kernel_sizes, mrf_dilations)
         self.conv_post = weight_norm(nn.Conv1d(self.mrfs[-1].channels, 1, 7, padding=3))  # ty: ignore[invalid-argument-type]
-        self.apply(lambda m: normal_(m.weight, 0.0, 0.01) if isinstance(m, (nn.Conv1d, nn.ConvTranspose1d)) else None)  # ty: ignore[invalid-argument-type]
 
     def forward(self, x: Tensor) -> Tensor:
         x = self.conv_pre(x)
@@ -324,7 +322,7 @@ class UnitVocoder(nn.Module, PyTorchModelHubMixin):
             style=tensor_from_name(style, self._style_to_index, units.device) if style else None,
             f0=tensor_from_name(f0, self._f0_bins_to_index, units.device) if f0 else None,
         ).squeeze(1)
-        return audio / audio.abs().max(dim=-1, keepdim=True).values
+        return audio / audio.abs().max(dim=-1, keepdim=True).values.clamp(min=1e-8)
 
     @property
     def n_units(self) -> int:

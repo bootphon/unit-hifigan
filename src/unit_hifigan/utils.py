@@ -29,7 +29,6 @@ def set_pytorch_flags() -> None:
     torch.backends.cudnn.benchmark = True
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = True
-    torch.autograd.set_detect_anomaly(mode=False, check_nan=True)
 
 
 def init_distributed() -> None:
@@ -123,6 +122,7 @@ class MetricsLogger:
         self.jsonl_writer: TextIOWrapper | None = None
 
     def log(self, metrics: dict[str, Any]) -> None:
+        self.open()
         print(json.dumps(metrics), file=self.jsonl_writer, flush=True)
 
     def open(self) -> None:

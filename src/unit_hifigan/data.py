@@ -24,7 +24,7 @@ def load_audio(source: str | Path) -> Tensor:
     data = samples.data
     assert data.size(0) == 1
     assert data.ndim == 2
-    return 0.95 * (data / data.abs().max())
+    return 0.95 * (data / data.abs().max().clamp(min=1e-8))
 
 
 def read_manifest(path: str | Path) -> pl.DataFrame:
@@ -135,9 +135,16 @@ class AudioDataLoader(StatefulDataLoader[AudioItem]):
     dataset: AudioDataset
 
     def set_metadata(self, *, speakers: list[str] | None, styles: list[str] | None, f0_bins: list[int] | None) -> None:
-        self.dataset.speakers = speakers
-        self.dataset.styles = styles
-        self.dataset.f0_bins = f0_bins
+        for name, cached, values in (
+            ("speakers", "speaker_to_index", speakers),
+            ("styles", "style_to_index", styles),
+            ("f0_bins", "f0_bins_to_index", f0_bins),
+        ):
+            current = getattr(self.dataset, name)
+            if current is not None and not set(current) <= set(values or []):
+                raise ValueError(f"The {name} of this manifest are not a subset of the provided {name}")
+            setattr(self.dataset, name, values)
+            self.dataset.__dict__.pop(cached, None)  # Invalidate the cached_property
 
     @property
     def speakers(self) -> list[str] | None:
@@ -152,6 +159,11 @@ class AudioDataLoader(StatefulDataLoader[AudioItem]):
         return self.dataset.f0_bins
 
 
+def default_num_workers() -> int:
+    n_local_ranks = max(torch.cuda.device_count(), 1) if dist.is_initialized() else 1
+    return max((os.process_cpu_count() or 1) // n_local_ranks, 1)
+
+
 def build_dataloader(
     manifest: str | Path,
     batch_size: int,
@@ -162,6 +174,7 @@ def build_dataloader(
     is_train: bool = True,
 ) -> AudioDataLoader:
     dataset = AudioDataset(manifest, segment_size, units_hop_size, random_crop=is_train)
+    num_workers = default_num_workers()
     return AudioDataLoader(
         dataset,
         batch_size=batch_size,
@@ -169,9 +182,9 @@ def build_dataloader(
         sampler=StatefulDistributedSampler(dataset, shuffle=is_train, seed=seed, drop_last=is_train)
         if dist.is_initialized()
         else None,
-        num_workers=os.process_cpu_count() or 0,
+        num_workers=num_workers,
         collate_fn=partial(collate, collate_fn_map=default_collate_fn_map | {NoneType: lambda *_, **__: None}),
         drop_last=is_train,
         generator=torch.Generator().manual_seed(seed + (dist.get_rank() if dist.is_initialized() else 0)),
-        persistent_workers=is_train,
+        persistent_workers=is_train and num_workers > 0,
     )

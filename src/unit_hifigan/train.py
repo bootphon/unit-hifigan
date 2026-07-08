@@ -7,6 +7,7 @@ from typing import Literal
 
 import torch
 from torch import distributed as dist
+from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
@@ -48,6 +49,7 @@ class TrainConfig:
     val_interval: int = 5_000
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "betas", tuple(self.betas))  # A JSON config provides a list
         if self.dtype not in ("float32", "float16", "bfloat16"):
             raise ValueError(f"Invalid dtype: {self.dtype}")
         assert Path(self.train_manifest).is_file(), f"Train manifest not found: {self.train_manifest}"
@@ -57,8 +59,8 @@ class TrainConfig:
 
 @torch.no_grad()
 def validate(
-    vocoder: DistributedDataParallel,
-    discriminator: DistributedDataParallel,
+    vocoder: nn.Module,
+    discriminator: nn.Module,
     loader: DataLoader,
     device: torch.device,
     dtype: torch.dtype,
@@ -115,9 +117,11 @@ def train(cfg: TrainConfig) -> None:  # noqa: PLR0915
         optim_g = AdamW(vocoder.parameters(), cfg.lr, cfg.betas, fused=True)
         optim_d = AdamW(discriminator.parameters(), cfg.lr, cfg.betas, fused=True)
         scheduler_g, scheduler_d = ExponentialLR(optim_g, cfg.gamma), ExponentialLR(optim_d, cfg.gamma)
-        scaler = torch.GradScaler()
+        scaler = torch.GradScaler(enabled=dtype == torch.float16)
 
         # Checkpointing
+        step, epoch = 1, 1
+
         def save_checkpoint() -> None:
             if not is_main:
                 return
@@ -152,8 +156,6 @@ def train(cfg: TrainConfig) -> None:  # noqa: PLR0915
             meters.load_state_dict(checkpoint["meters"])
             step = checkpoint["step"].item()
             epoch = checkpoint["epoch"].item()
-        else:
-            step, epoch = 1, 1
         pbar = stack.enter_context(tqdm(initial=step, disable=not is_main, total=cfg.max_steps))
 
         # DDP and torch compile
@@ -176,7 +178,9 @@ def train(cfg: TrainConfig) -> None:  # noqa: PLR0915
                 scaler.step(optim_d)
                 optim_g.zero_grad()
                 with torch.autocast(device_type="cuda", dtype=dtype, enabled=with_autocast):
-                    loss_g, losses_g = generator_loss(ddp_disc(batch.audio), ddp_disc(generated))
+                    with torch.no_grad():
+                        real = ddp_disc(batch.audio)
+                    loss_g, losses_g = generator_loss(real, ddp_disc(generated))
                 scaler.scale(loss_g).backward()
                 scaler.step(optim_g)
                 scaler.update()
@@ -226,6 +230,8 @@ if __name__ == "__main__":
     elif args.config is not None:
         cfg = TrainConfig(**json.loads(args.config.read_text()))
         print(f"Starting training with configuration from {args.config}")
+    elif args.train is None or args.val is None or args.units is None:
+        parser.error("--train, --val and --units are required when --config is not provided")
     else:
         cfg = TrainConfig(
             str(args.workdir.expanduser().resolve()),
