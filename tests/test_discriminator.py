@@ -14,10 +14,15 @@ import pytest
 import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from models import MultiPeriodDiscriminator, MultiScaleDiscriminator  # ty: ignore[unresolved-import]
 
 from unit_hifigan.compatibility import convert_discriminators_state_dict
 from unit_hifigan.model import UnitDiscriminator
+
+legacy_models = pytest.importorskip("models", reason="speech-resynthesis submodule not initialized")
+MultiPeriodDiscriminator = legacy_models.MultiPeriodDiscriminator
+MultiScaleDiscriminator = legacy_models.MultiScaleDiscriminator
+
+pytestmark = pytest.mark.slow
 
 type Discriminators = tuple[UnitDiscriminator, tuple[MultiPeriodDiscriminator, MultiScaleDiscriminator]]
 

@@ -40,11 +40,13 @@ test = [
 requires = ["flit_core>=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.pytest]
-addopts = ["--ignore=tests/speech-resynthesis", "-v"]
+[tool.pytest.ini_options]
+addopts = ["--ignore=tests/speech-resynthesis"]
+markers = ["slow: parity tests against the reference implementation (deselect with '-m \"not slow\"')"]
 
 [tool.ruff]
 line-length = 119
+extend-exclude = ["tests/speech-resynthesis"]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -59,6 +61,9 @@ ignore-names = ["F"]
 
 [tool.ruff.lint.flake8-self]
 ignore-names = ["_foreach_add", "_foreach_pow", "_foreach_abs"]
+
+[tool.ty.src]
+exclude = ["tests/speech-resynthesis"]
 
 [tool.ty.rules]
 possibly-missing-attribute = "ignore"

@@ -2,13 +2,18 @@ import warnings
 
 import pytest
 import torch
-from examples.expresso.models import MultiSpkrMultiStyleCodeGenerator  # ty: ignore[unresolved-import]
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from utils import AttrDict  # ty: ignore[unresolved-import]
 
 from unit_hifigan import UnitVocoder
 from unit_hifigan.compatibility import convert_vocoder_state_dict
+
+legacy_models = pytest.importorskip("examples.expresso.models", reason="speech-resynthesis submodule not initialized")
+legacy_utils = pytest.importorskip("utils", reason="speech-resynthesis submodule not initialized")
+MultiSpkrMultiStyleCodeGenerator = legacy_models.MultiSpkrMultiStyleCodeGenerator
+AttrDict = legacy_utils.AttrDict
+
+pytestmark = pytest.mark.slow
 
 type Vocoders = tuple[UnitVocoder, MultiSpkrMultiStyleCodeGenerator]
 
