@@ -113,10 +113,23 @@ python -m unit_hifigan.wer.torchaudio $GENERATIONS $ASR_MANIFEST $JSONL_OUTPUT -
 
 where $MODEL is the name of the torchaudio ASR pipeline to use (by default `WAV2VEC2_ASR_LARGE_LV60K_960H`).
 
+#### Mel cepstral distortion
+
+```bash
+python -m unit_hifigan.mcd $REFERENCE $GENERATIONS $JSONL_OUTPUT
+```
+
+where $REFERENCE and $GENERATIONS are two directories containing audio files with matching names
+(for example the original dataset and the output of `unit_hifigan.inference`).
+Audio files are matched by file name, regardless of the directory structure.
+The MCD follows the classic SPTK recipe in pure PyTorch (see the notes in `unit_hifigan.mcd.MelCepstrum`):
+mel cepstra of order 23 with all-pass frequency warping (α=0.42 at 16kHz), computed like `pysptk.sp2mc`
+from Hamming-windowed periodograms, dropping the energy coefficient c0, with exact DTW alignment
+of the frames. The per-file MCDs in dB are written to $JSONL_OUTPUT.
+
 
 ## TODO
 
-- Add MCD evaluation
 - Add support for F0
 
 ## Acknowledgements

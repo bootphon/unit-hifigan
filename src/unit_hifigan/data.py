@@ -11,7 +11,7 @@ from torch import Tensor
 from torch._prims_common import DeviceLikeType
 from torch.utils.data import Dataset
 from torch.utils.data._utils.collate import collate, default_collate_fn_map
-from torchcodec.decoders import AudioDecoder
+from torchcodec.decoders import AudioDecoder, WavDecoder
 from torchdata.stateful_dataloader import StatefulDataLoader
 from torchdata.stateful_dataloader.sampler import StatefulDistributedSampler
 
@@ -19,7 +19,8 @@ from unit_hifigan.model import SAMPLE_RATE
 
 
 def load_audio(source: str | Path) -> Tensor:
-    samples = AudioDecoder(source).get_all_samples()
+    decoder = WavDecoder if Path(source).suffix == ".wav" else AudioDecoder
+    samples = decoder(source).get_all_samples()
     assert samples.sample_rate == SAMPLE_RATE
     data = samples.data
     assert data.size(0) == 1

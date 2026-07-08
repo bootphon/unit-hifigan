@@ -60,6 +60,7 @@ def test_gan_discriminator_loss() -> None:
     torch.testing.assert_close(perfect, torch.tensor(0.0))
 
 
+@pytest.mark.filterwarnings("ignore:torch.compile with fullgraph=True found no compiled frames.:UserWarning:torch")
 def test_generator_loss_weighting() -> None:
     """The total must match the original: 45 * mel + 2 * (fm_mpd + fm_msd) + gen_mpd + gen_msd."""
     generator = torch.Generator().manual_seed(0)

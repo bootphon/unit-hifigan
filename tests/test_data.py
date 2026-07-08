@@ -11,6 +11,8 @@ from unit_hifigan.model import SAMPLE_RATE
 UNITS_HOP_SIZE = 320
 SEGMENT_SIZE = 1_600  # 5 units
 
+pytestmark = pytest.mark.filterwarnings("ignore:'set_vital' is deprecated, please do not call:UserWarning")
+
 
 def write_audio(path: Path, n_samples: int, sample_rate: int = SAMPLE_RATE, *, silent: bool = False) -> None:
     samples = torch.zeros(n_samples) if silent else torch.sin(torch.linspace(0, 100, n_samples))

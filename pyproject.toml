@@ -18,6 +18,7 @@ dependencies = [
   "torchaudio>=2.10.0",
   "torchcodec>=0.10.0",
   "torchdata>=0.11.0",
+  "torchdtw>=0.4.0",
   "tqdm>=4.67.1",
   "viztracer>=1.0.4",
 ]
@@ -30,6 +31,7 @@ dev = ["prek>=0.4.8"]
 test = [
   "hypothesis>=6.141.0",
   "matplotlib>=3.10.7",
+  "pysptk>=1.0.1",
   "pytest>=8.4.2",
 ]
 
@@ -39,6 +41,9 @@ build-backend = "flit_core.buildapi"
 
 [tool.pytest.ini_options]
 addopts = ["--ignore=tests/speech-resynthesis"]
+filterwarnings = [
+  "ignore:pkg_resources is deprecated as an API:UserWarning:pysptk.util",
+]
 markers = [
   "slow: parity tests against the reference implementation (deselect with '-m \"not slow\"')"
 ]
