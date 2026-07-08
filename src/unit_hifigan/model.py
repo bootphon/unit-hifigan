@@ -138,19 +138,19 @@ class UnitDiscriminator(nn.Module, PyTorchModelHubMixin):
             hop_length=256,
             f_min=0,
             f_max=8_000,
-            pad=384,
             n_mels=80,
             window_fn=torch.hann_window,
             power=1,
             normalized=False,
             center=False,
-            pad_mode="reflect",
             norm="slaney",
             mel_scale="slaney",
         )
 
     @torch.compiler.disable
     def log_mel_spectrogram(self, waveform: Tensor) -> Tensor:
+        padding = (1_024 - 256) // 2  # Reflect padding by (n_fft - hop_length) / 2, can't be done in MelSpectrogram
+        waveform = F.pad(waveform.unsqueeze(1), (padding, padding), "reflect").squeeze(1)
         return torch.clamp(self.mel_spectrogram(waveform), min=1e-5).log()
 
     def forward(self, audio: Tensor) -> UnitDiscriminatorOutput:

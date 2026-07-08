@@ -38,12 +38,6 @@ def generator_loss(real: UnitDiscriminatorOutput, generated: UnitDiscriminatorOu
     loss_fm_mpd = feature_matching_loss(real.mpd_features, generated.mpd_features)
     loss_fm_msd = feature_matching_loss(real.msd_features, generated.msd_features)
     loss_gen_mpd, loss_gen_msd = gan_generator_loss(generated.mpd), gan_generator_loss(generated.msd)
-    loss = (
-        LAMBDA_MEL * loss_mel
-        + LAMBDA_FEATURE_MATCHING * loss_fm_mpd
-        + LAMBDA_FEATURE_MATCHING * loss_gen_mpd
-        + loss_fm_msd
-        + loss_gen_msd
-    )
+    loss = LAMBDA_MEL * loss_mel + LAMBDA_FEATURE_MATCHING * (loss_fm_mpd + loss_fm_msd) + loss_gen_mpd + loss_gen_msd
     losses = {"mel": loss_mel, "fm_mpd": loss_fm_mpd, "fm_msd": loss_fm_msd, "mpd": loss_gen_mpd, "msd": loss_gen_msd}
     return loss, losses

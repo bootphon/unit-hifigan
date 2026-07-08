@@ -34,7 +34,7 @@ def discriminators(device: torch.device) -> Discriminators:
     return ours, (ref_mpd, ref_msd)
 
 
-@given(batch_size=st.integers(1, 32), length=st.integers(256, 64_000))
+@given(batch_size=st.integers(1, 32), length=st.integers(385, 64_000))
 @settings(deadline=None)
 def test_discriminator(discriminators: Discriminators, device: torch.device, batch_size: int, length: int) -> None:
     x = torch.testing.make_tensor((batch_size, 1, length), dtype=torch.float32, device=device)

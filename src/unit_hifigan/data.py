@@ -55,7 +55,14 @@ class AudioItem(NamedTuple):
         )
 
 
-def crop_segment(units: Tensor, audio: Tensor, units_hop_size: int, audio_segment_size: int) -> tuple[Tensor, Tensor]:
+def crop_segment(
+    units: Tensor,
+    audio: Tensor,
+    units_hop_size: int,
+    audio_segment_size: int,
+    *,
+    random_crop: bool = True,
+) -> tuple[Tensor, Tensor]:
     assert audio_segment_size % units_hop_size == 0
     units_segment_size = audio_segment_size // units_hop_size
     units_length = min(audio.size(-1) // units_hop_size, units.size(-1))
@@ -63,8 +70,8 @@ def crop_segment(units: Tensor, audio: Tensor, units_hop_size: int, audio_segmen
     audio = audio[..., : units_length * units_hop_size]
     while audio.size(-1) < audio_segment_size:
         audio, units = torch.hstack([audio, audio]), torch.hstack([units, units])
-    audio_length = audio.size(-1)
-    start_units = torch.randint(0, audio_length // units_hop_size - units_segment_size + 1, (1,)).item()
+    n_positions = audio.size(-1) // units_hop_size - units_segment_size + 1
+    start_units = torch.randint(0, n_positions, (1,)).item() if random_crop else 0
     start_audio = start_units * units_hop_size
     units = units[..., start_units : start_units + units_segment_size]
     audio = audio[..., start_audio : start_audio + audio_segment_size]
@@ -72,9 +79,16 @@ def crop_segment(units: Tensor, audio: Tensor, units_hop_size: int, audio_segmen
 
 
 class AudioDataset(Dataset[AudioItem]):
-    def __init__(self, manifest: str | Path, segment_size: int, units_hop_size: int) -> None:
+    def __init__(
+        self,
+        manifest: str | Path,
+        segment_size: int,
+        units_hop_size: int,
+        *,
+        random_crop: bool = True,
+    ) -> None:
         assert segment_size % units_hop_size == 0, "segment_size must be multiple of SAMPLE_RATE / unit_frequency"
-        self.segment_size, self.units_hop_size = segment_size, units_hop_size
+        self.segment_size, self.units_hop_size, self.random_crop = segment_size, units_hop_size, random_crop
         self.manifest = read_manifest(manifest)
         assert {"units", "audio"}.issubset(set(self.manifest.columns))
         if "speaker" in self.manifest.columns:
@@ -107,7 +121,7 @@ class AudioDataset(Dataset[AudioItem]):
     def __getitem__(self, index: int) -> AudioItem:
         entry = self.manifest[index].to_dicts()[0]
         units, audio = torch.tensor(entry["units"], dtype=torch.long), load_audio(entry["audio"])
-        units, audio = crop_segment(units, audio, self.units_hop_size, self.segment_size)
+        units, audio = crop_segment(units, audio, self.units_hop_size, self.segment_size, random_crop=self.random_crop)
         speaker = (
             torch.tensor([self.speaker_to_index[entry["speaker"]]], dtype=torch.long)
             if self.speaker_to_index
@@ -147,7 +161,7 @@ def build_dataloader(
     *,
     is_train: bool = True,
 ) -> AudioDataLoader:
-    dataset = AudioDataset(manifest, segment_size, units_hop_size)
+    dataset = AudioDataset(manifest, segment_size, units_hop_size, random_crop=is_train)
     return AudioDataLoader(
         dataset,
         batch_size=batch_size,

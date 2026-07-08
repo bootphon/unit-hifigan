@@ -80,11 +80,9 @@ def validate(
         loss_g_total += loss_g
     vocoder.train()
     discriminator.train()
-    return {
-        "val/loss_mel": (loss_mel_total / len(loader)).item(),
-        "val/loss_g": (loss_g_total / len(loader)).item(),
-        "val/loss_d": (loss_d_total / len(loader)).item(),
-    }
+    totals = torch.stack([loss_mel_total, loss_g_total, loss_d_total]) / len(loader)
+    dist.all_reduce(totals, op=dist.ReduceOp.AVG)
+    return {"val/loss_mel": totals[0].item(), "val/loss_g": totals[1].item(), "val/loss_d": totals[2].item()}
 
 
 def train(cfg: TrainConfig) -> None:  # noqa: PLR0915
