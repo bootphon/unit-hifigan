@@ -11,3 +11,5 @@ tests/textlesslib
 workdir
 expresso
 .hypothesis
+.ruff_cache
+.pytest_cache

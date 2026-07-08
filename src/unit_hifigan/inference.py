@@ -11,9 +11,9 @@ from unit_hifigan.data import read_manifest
 from unit_hifigan.model import SAMPLE_RATE, UnitVocoder
 
 
-def inference(root: str | Path, path_model: str | Path, path_manifest: str | Path) -> None:
+def inference(root: str | Path, path_model: str | Path, path_manifest: str | Path, device_type: str = "cuda") -> None:
     root = Path(root)
-    device = torch.device("cuda")
+    device = torch.device(device_type)
     model = UnitVocoder.from_pretrained(path_model).eval().to(device)
     model.compile(fullgraph=True, dynamic=True)
     manifest = read_manifest(path_manifest)
@@ -37,5 +37,6 @@ if __name__ == "__main__":
     parser.add_argument("root", type=Path, help="Root directory to generated files")
     parser.add_argument("model", type=Path, help="Path to trained model")
     parser.add_argument("manifest", type=Path, help="Manifest file (with columns 'audio' and 'units')")
+    parser.add_argument("--device", default="cuda", help="Device to run inference on")
     args = parser.parse_args()
-    inference(args.root, args.model, args.manifest)
+    inference(args.root, args.model, args.manifest, args.device)
