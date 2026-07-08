@@ -71,10 +71,10 @@ Via the CLI:
 
 ```bash
 # Minimal command with default configuration
-python -m unit_hifigan.train --train $TRAIN_MANIFEST --val $VAL_MANIFEST --units $N_UNITS
+python -m unit_hifigan.train $WORKDIR --train $TRAIN_MANIFEST --val $VAL_MANIFEST --units $N_UNITS
 
 # If you have a JSON config file
-python -m unit_hifigan.train --config $CONFIG
+python -m unit_hifigan.train $WORKDIR --config $CONFIG
 ```
 You can also use the `unit_hifigan.train.train` function in your Python code if you prefer. Check out `unit_hifigan.train.TrainConfig` for the list of configuration options.
 
