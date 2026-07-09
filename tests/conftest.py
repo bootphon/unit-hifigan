@@ -14,6 +14,8 @@ def config() -> dict:
 
 @pytest.fixture(scope="session")
 def device() -> torch.device:
+    torch.backends.cuda.matmul.allow_tf32 = False  # Otherwise test_vocoder.py is flaky
+    torch.backends.cudnn.allow_tf32 = False
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
