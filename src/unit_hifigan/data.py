@@ -165,6 +165,10 @@ def default_num_workers() -> int:
     return max((os.process_cpu_count() or 1) // n_local_ranks, 1)
 
 
+def collate_none_fn(batch, *, collate_fn_map):
+    return None
+
+
 def build_dataloader(
     manifest: str | Path,
     batch_size: int,
@@ -184,7 +188,7 @@ def build_dataloader(
         if dist.is_initialized()
         else None,
         num_workers=num_workers,
-        collate_fn=partial(collate, collate_fn_map=default_collate_fn_map | {NoneType: lambda *_, **__: None}),
+        collate_fn=partial(collate, collate_fn_map=default_collate_fn_map | {NoneType: collate_none_fn}),
         drop_last=is_train,
         generator=torch.Generator().manual_seed(seed + (dist.get_rank() if dist.is_initialized() else 0)),
         persistent_workers=is_train and num_workers > 0,
