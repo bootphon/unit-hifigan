@@ -43,7 +43,7 @@ def init_distributed() -> None:
         world_size = os.environ["SLURM_NTASKS"]
     else:  # One local GPU
         global_rank, local_rank, world_size = "0", "0", "1"
-        master_port, master_addr = str(random.Random(-1).randint(20_000, 60_000)), "127.0.0.1"
+        master_port, master_addr = str(random.Random().randint(20_000, 60_000)), "127.0.0.1"
     os.environ["RANK"], os.environ["LOCAL_RANK"], os.environ["WORLD_SIZE"] = global_rank, local_rank, world_size
     os.environ["MASTER_PORT"], os.environ["MASTER_ADDR"] = master_port, master_addr
     dist.init_process_group(backend="nccl")
