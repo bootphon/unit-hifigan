@@ -1,7 +1,7 @@
 exclude: uv.lock
 repos:
 - repo: https://github.com/zizmorcore/zizmor-pre-commit
-  rev: v1.25.2
+  rev: v1.26.1
   hooks:
     - id: zizmor
 - repo: https://github.com/crate-ci/typos
@@ -9,22 +9,22 @@ repos:
   hooks:
     - id: typos
 - repo: https://github.com/tombi-toml/tombi-pre-commit
-  rev: v1.1.2
+  rev: v1.1.4
   hooks:
     - id: tombi-format
     - id: tombi-lint
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.15.17
+  rev: v0.15.18
   hooks:
     - id: ruff-check
       args: [ --fix ]
     - id: ruff-format
 - repo: https://github.com/astral-sh/uv-pre-commit
-  rev: 0.11.21
+  rev: 0.11.23
   hooks:
     - id: uv-lock
     - id: uv-audit
-      args: [ --ignore, CVE-2025-3000]
+      args: [ --ignore, GHSA-h35f-9h28-mq5c, --ignore, PYSEC-2026-3447] # pysptk uses pkg_resources and requires setuptools<82
 - repo: https://github.com/astral-sh/ty-pre-commit
   rev: v0.0.56
   hooks:

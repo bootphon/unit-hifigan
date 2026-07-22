@@ -1,4 +1,5 @@
 import os
+from collections.abc import Callable
 from functools import cached_property, partial
 from pathlib import Path
 from types import NoneType
@@ -165,7 +166,7 @@ def default_num_workers() -> int:
     return max((os.process_cpu_count() or 1) // n_local_ranks, 1)
 
 
-def collate_none_fn(batch, *, collate_fn_map):
+def collate_none_fn(batch, *, collate_fn_map: dict[type | tuple[type, ...], Callable] | None = None) -> None:  # noqa: ANN001, ARG001
     return None
 
 

@@ -33,6 +33,7 @@ test = [
   "matplotlib>=3.10.7",
   "pysptk>=1.0.1",
   "pytest>=8.4.2",
+  "setuptools<82",  # pysptk uses pkg_resources
 ]
 
 [build-system]
